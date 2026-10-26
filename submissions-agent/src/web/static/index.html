@@ -1889,8 +1889,24 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // ---------------------------------------------------------------------------
 // API helpers
 // ---------------------------------------------------------------------------
-async function api(path, opts) {
+function _getToken() {
+  try { return localStorage.getItem('lk_agent_token') || ''; } catch { return ''; }
+}
+function _setToken(t) {
+  try { localStorage.setItem('lk_agent_token', t); } catch {}
+}
+
+async function api(path, opts = {}) {
+  const token = _getToken();
+  if (token && opts.method && opts.method !== 'GET') {
+    opts.headers = { ...opts.headers, 'Authorization': `Bearer ${token}` };
+  }
   const r = await fetch(path, opts);
+  if (r.status === 401) {
+    const t = prompt('Enter the access token for this app:');
+    if (t) { _setToken(t.trim()); return api(path, opts); }
+    throw new Error('Unauthorized — token required');
+  }
   if (!r.ok) {
     const body = await r.json().catch(() => ({ detail: r.statusText }));
     throw new Error(body.detail || r.statusText);
