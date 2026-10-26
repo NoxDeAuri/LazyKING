@@ -2,7 +2,7 @@
 # Deploy: fly deploy (from the submissions-agent/ directory)
 # Docs:   https://fly.io/docs/reference/configuration/
 
-app = "LazyKING"   # CHANGE THIS — must be globally unique on Fly
+app = "lazyking"   # CHANGE THIS — must be globally unique on Fly
 primary_region = "ord"      # Chicago; change to nearest: iad=Virginia, lax=LA, sea=Seattle
 
 [build]
