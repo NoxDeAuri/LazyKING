@@ -1,0 +1,215 @@
+{
+  "works": [
+    {
+      "id": "creme-brulee",
+      "title": "Creme Brulee",
+      "type": "novel",
+      "status": "querying",
+      "word_count": 55565,
+      "genre": "literary fiction",
+      "themes": ["father-son legacy", "ambition vs. safety", "grief", "identity", "cost of obsession", "inherited restlessness", "choosing love over legacy", "the myth of a parent"],
+      "synopsis": {
+        "short": "Ben Harper is a Chicago chef living deliberately small — present, in love, nothing like his father. When a foundation gala honors his father's Paris legend, Ben skips it and flies to Paris instead. He finds the man still cooking in a back room, still chasing the next star as if the last one meant nothing. And he finds the same hunger alive in himself.",
+        "long": "Ben Harper keeps a secret: he is Benjamin Harper Jr., named for a father who earned a Michelin star in Paris and vanished the same night. Ben has spent his adult life in Chicago doing the opposite — cooking without ambition, staying put, growing a relationship slowly and without fanfare.\n\nWhen a culinary foundation announces a gala to honor his father's ghost, Ben doesn't go. He flies to Paris. He traces his father through former kitchens, old colleagues, the woman left behind. What he expected was a reckoning. What he finds is a mirror: a man still cooking in a small room, still reaching for the next recognition, the last one already meaningless. The obsession didn't make the star. The star fed the obsession.\n\nBen sees himself in that room. The precision he can't turn off. The restlessness. The instinct to leave before anything gets warm.\n\nThe novel's final tension is not forgiveness but choice. Ben comes home to the romance he's let grow — the life that asked only that he stay — and stays."
+      },
+      "comps": [
+        "Daria Lavelle, Aftertaste (2025)",
+        "Kaveh Akbar, Martyr! (2024)",
+        "The Bear (tonal anchor)"
+      ],
+      "content_flags": [],
+      "submission_history": [],
+      "accepted_on": null,
+      "timeline_id": null
+    },
+    {
+      "id": "the-cliffs",
+      "title": "The Cliffs",
+      "type": "short story",
+      "status": "complete",
+      "word_count": 2883,
+      "genre": "literary",
+      "themes": ["father-son relationship", "grief", "art"],
+      "synopsis": {
+        "short": "A man reflects on his childhood spent learning his absent father's painting styles and making copies of all of his works. At the end, it's revealed that the painting he's looking at in the museum is his own copy.",
+        "long": "A man reflects on his childhood spent learning his absent father's painting styles and making copies of all of his works. At the end, it's revealed that the painting he's looking at in the museum is his own copy."
+      },
+      "comps": [],
+      "content_flags": [],
+      "submission_history": [
+        {
+          "call": "submitted to some places (list not yet recorded)",
+          "date": null,
+          "result": "no responses yet"
+        }
+      ],
+      "accepted_on": null,
+      "timeline_id": null
+    },
+    {
+      "id": "little-nero",
+      "title": "Little Nero",
+      "type": "short story",
+      "status": "complete",
+      "word_count": 4424,
+      "genre": "literary",
+      "themes": ["grief", "family"],
+      "synopsis": {
+        "short": "A man dives to remove bodies from underwater mausoleums. He is asked to smuggle something out, but when he does, his reality starts to shift.",
+        "long": "A man dives to remove bodies from underwater mausoleums. He is asked to smuggle something out, but when he does, his reality starts to shift."
+      },
+      "comps": [],
+      "content_flags": [],
+      "submission_history": [
+        {
+          "call": "submitted to some places (list not yet recorded)",
+          "date": null,
+          "result": "no responses yet"
+        }
+      ],
+      "accepted_on": null,
+      "timeline_id": null
+    },
+    {
+      "id": "strozapretti",
+      "title": "Strozapretti",
+      "type": "short story",
+      "status": "complete",
+      "word_count": 1479,
+      "genre": "literary",
+      "themes": ["religious danger", "prophecy"],
+      "synopsis": {
+        "short": "A priest tries to bring a prophecy from god to a king, but instead gives the medicine to another priest. That priest dies but comes up with an answer for the king.",
+        "long": "A priest tries to bring a prophecy from god to a king, but instead gives the medicine to another priest. That priest dies but comes up with an answer for the king."
+      },
+      "comps": [],
+      "content_flags": [],
+      "submission_history": [
+        {
+          "call": "submitted to unknown places (list not yet recorded)",
+          "date": null,
+          "result": "rejected, date unknown"
+        }
+      ],
+      "accepted_on": null,
+      "timeline_id": null
+    },
+    {
+      "id": "mosquito",
+      "title": "Mosquito",
+      "type": "short story",
+      "status": "complete",
+      "word_count": 1593,
+      "genre": "literary",
+      "themes": ["religious ambition"],
+      "synopsis": {
+        "short": "A mosquito that can become what it eats targets a priest so that he can eventually have communion, eat, and become God.",
+        "long": "A mosquito that can become what it eats targets a priest so that he can eventually have communion, eat, and become God."
+      },
+      "comps": [],
+      "content_flags": [],
+      "submission_history": [
+        {
+          "call": "submitted to unknown places (list not yet recorded)",
+          "date": null,
+          "result": "rejected, date unknown"
+        }
+      ],
+      "accepted_on": null,
+      "timeline_id": null
+    },
+    {
+      "id": "the-shephard",
+      "title": "The Shephard",
+      "type": "short story",
+      "status": "drafting",
+      "word_count": 3150,
+      "genre": "literary",
+      "themes": ["fear of knowledge"],
+      "synopsis": {
+        "short": "A cyclops isolated on an island thinks his time is ending as the volcano starts up. He goes to try and stop it, to protect his sheep, and finds men throwing his books into the lava.",
+        "long": "A cyclops isolated on an island thinks his time is ending as the volcano starts up. He goes to try and stop it, to protect his sheep, and finds men throwing his books into the lava."
+      },
+      "comps": [],
+      "content_flags": [],
+      "submission_history": [],
+      "accepted_on": null,
+      "timeline_id": null
+    },
+    {
+      "id": "fish",
+      "title": "Fish",
+      "type": "short story",
+      "status": "drafting",
+      "word_count": 1930,
+      "genre": "literary",
+      "themes": ["ambition", "selfishness", "community"],
+      "synopsis": {
+        "short": "A man makes a deal with the devil for beautiful fish, but finds that this makes all fish caught on the island uneatable.",
+        "long": "A man makes a deal with the devil for beautiful fish, but finds that this makes all fish caught on the island uneatable."
+      },
+      "comps": [],
+      "content_flags": [],
+      "submission_history": [],
+      "accepted_on": null,
+      "timeline_id": null
+    },
+    {
+      "id": "another-cigarette",
+      "title": "Another Cigarette",
+      "type": "short story",
+      "status": "complete",
+      "word_count": 1494,
+      "target_word_count_note": "Limit for an unnamed call; Trevor will add the call later. Current count is mid-edit.",
+      "genre": "literary",
+      "themes": ["conspiracy", "old friends", "high school"],
+      "synopsis": {
+        "short": "Two old high school friends meet again at the reunion and find they have the same job, painting leaves to mimic autumn.",
+        "long": "Two old high school friends meet again at the reunion and find they have the same job, painting leaves to mimic autumn."
+      },
+      "comps": [],
+      "content_flags": [],
+      "submission_history": [],
+      "accepted_on": null,
+      "timeline_id": null
+    },
+    {
+      "id": "mint-and-milk",
+      "title": "Mint & Milk",
+      "type": "short story",
+      "status": "drafting",
+      "word_count": 2065,
+      "genre": "literary",
+      "themes": ["grief", "comfort", "anxiety", "acceptance"],
+      "synopsis": {
+        "short": "A man mourns his dog while his partner makes him an old snack. The snack reminds him of the cocktail given to his dog before death.",
+        "long": "A man mourns his dog while his partner makes him an old snack. The snack reminds him of the cocktail given to his dog before death."
+      },
+      "comps": [],
+      "content_flags": ["dog dying"],
+      "submission_history": [],
+      "accepted_on": null,
+      "timeline_id": null
+    },
+    {
+      "id": "lawrence",
+      "title": "Lawrence",
+      "type": "short story",
+      "status": "drafting",
+      "word_count": 500,
+      "word_count_note": "Estimate from one handwritten page",
+      "genre": "literary",
+      "themes": ["grief", "legacy"],
+      "synopsis": {
+        "short": "A man has to come to his family's manor after the last member of his family dies. The house is full of old memories of family both known and unknown, and he has to continue their legacy.",
+        "long": "A man has to come to his family's manor after the last member of his family dies. The house is full of old memories of family both known and unknown, and he has to continue their legacy."
+      },
+      "comps": [],
+      "content_flags": [],
+      "submission_history": [],
+      "call_requirements": ["same first sentence in every story (call not yet identified)"],
+      "accepted_on": null,
+      "timeline_id": null
+    }
+  ]
+}

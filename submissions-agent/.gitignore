@@ -1,0 +1,11 @@
+.env
+src/profile/works.json
+*.session
+data/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.pytest_cache/
+dist/
+*.egg-info/

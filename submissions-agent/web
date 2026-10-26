@@ -1,0 +1,3 @@
+#!/bin/zsh
+# Starts the web dashboard at http://localhost:8765
+exec /Users/trevor.trosclair/.pyenv/versions/3.13.0/bin/web-server "$@"

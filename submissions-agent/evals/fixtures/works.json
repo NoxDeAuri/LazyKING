@@ -1,0 +1,34 @@
+{
+  "works": [
+    {
+      "id": "grief-in-winter",
+      "title": "Grief in Winter",
+      "type": "short story",
+      "genre": "literary fiction",
+      "status": "complete",
+      "word_count": 3200,
+      "themes": ["grief", "family", "memory"],
+      "synopsis_short": "A woman returns to her childhood home after her mother's death and discovers a box of unsent letters."
+    },
+    {
+      "id": "the-cartographer",
+      "title": "The Cartographer",
+      "type": "short story",
+      "genre": "literary fiction",
+      "status": "complete",
+      "word_count": 4800,
+      "themes": ["identity", "obsession", "loss"],
+      "synopsis_short": "A map-maker in a crumbling empire charts territories that no longer exist."
+    },
+    {
+      "id": "river-mouth",
+      "title": "River Mouth",
+      "type": "short story",
+      "genre": "literary fiction",
+      "status": "drafting",
+      "word_count": 1400,
+      "themes": ["childhood", "class", "place"],
+      "synopsis_short": "Two boys fish at the edge of an industrial town the summer before everything changes."
+    }
+  ]
+}
