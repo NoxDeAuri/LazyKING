@@ -347,26 +347,30 @@ async def get_matches(
         works = load_works().get("works", [])
         eligible = [w for w in works if w.get("status") in ("complete", "drafting")]
         if not eligible:
+            from ..match.matcher import _has_fee
             results = [
                 {
-                    "listing_title":    l.title,
-                    "listing_url":      l.url,
-                    "submission_url":   l.submission_url or l.url,
-                    "magazine_name":    l.magazine_name,
-                    "magazine_url":     l.magazine_url,
-                    "pub_description":  l.pub_description,
-                    "pub_description_full": l.pub_description_full,
-                    "call_description": l.call_description,
-                    "deadline":         l.deadline.isoformat() if l.deadline else None,
-                    "pay":              l.pay,
-                    "fee":              l.fee,
-                    "genre":            l.genre,
-                    "complete_matches": [],
-                    "draft_matches":    [],
-                    "metadata":         l.metadata or {},
+                    "listing_title":            l.title,
+                    "listing_url":              l.url,
+                    "submission_url":           l.submission_url or l.url,
+                    "magazine_name":            l.magazine_name,
+                    "magazine_url":             l.magazine_url,
+                    "pub_description":          l.pub_description,
+                    "pub_description_full":     l.pub_description_full,
+                    "call_description":         l.call_description,
+                    "genre_style":              l.genre_style,
+                    "deadline":                 l.deadline.isoformat() if l.deadline else None,
+                    "fee":                      l.fee,
+                    "fee_required":             _has_fee(l),
+                    "max_word_count":           l.max_word_count,
+                    "simultaneous_submissions": l.simultaneous_submissions,
+                    "pay_rate":                 l.pay_rate,
+                    "complete_matches":         [],
+                    "draft_matches":            [],
                 }
                 for l in listings
             ]
+            results.sort(key=lambda x: (x["fee_required"], x["deadline"] or "9999-99-99"))
     return {"count": len(results), "matches": results, "fetched_at": fetched_at, "source": source}
 
 
