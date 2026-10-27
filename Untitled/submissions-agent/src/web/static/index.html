@@ -724,6 +724,26 @@
     #toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--fg);color:var(--bg);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;z-index:9999 }
     #toast.show { opacity:1;transform:translateX(-50%) translateY(0) }
 
+    /* ── Auth screen ── */
+    #auth-screen { position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px }
+    #auth-screen.hidden { display:none }
+    .auth-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:36px 32px;width:100%;max-width:360px;box-shadow:var(--shadow) }
+    .auth-brand { display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center }
+    .auth-brand .brand-name { font-size:20px }
+    .auth-tabs { display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:24px }
+    .auth-tab-btn { flex:1;background:none;border:none;padding:8px 0;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:background .15s,color .15s }
+    .auth-tab-btn.active { background:var(--accent);color:#fff }
+    .auth-field { display:flex;flex-direction:column;gap:5px;margin-bottom:14px }
+    .auth-field label { font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.03em;text-transform:uppercase }
+    .auth-field input { background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:9px 11px;font-size:14px;color:var(--fg);outline:none;transition:border-color .15s }
+    .auth-field input:focus { border-color:var(--accent) }
+    .auth-submit { width:100%;background:var(--accent);color:#fff;border:none;border-radius:4px;padding:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px;transition:opacity .15s }
+    .auth-submit:hover { opacity:.88 }
+    .auth-submit:disabled { opacity:.5;cursor:default }
+    .auth-msg { font-size:13px;margin-top:8px;min-height:18px }
+    .auth-msg.error { color:var(--red) }
+    .auth-msg.ok { color:var(--green) }
+
     /* ── Query / publisher cards ── */
     .qt-card {
       border: 1px solid var(--border); border-radius: var(--r-lg);
@@ -1049,6 +1069,47 @@
 <body>
 <div id="toast"></div>
 
+<!-- ═══════════════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════════════ -->
+<div id="auth-screen" class="hidden">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <svg class="brand-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="auth-lk-bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#FCD34D"/>
+            <stop offset="100%" stop-color="#92400E"/>
+          </linearGradient>
+        </defs>
+        <rect width="32" height="32" rx="8" fill="url(#auth-lk-bg)"/>
+        <path d="M6,25 L6,19 L10,12 L13,16 L16,7 L19,16 L22,12 L26,19 L26,25 Z" fill="white"/>
+      </svg>
+      <span class="brand-name"><span style="font-weight:300;opacity:.6">Lazy</span><span style="font-weight:700">King</span></span>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="auth-tab-login" onclick="showAuthTab('login')">Sign In</button>
+      <button class="auth-tab-btn" id="auth-tab-register" onclick="showAuthTab('register')">Register</button>
+    </div>
+    <form id="auth-form" onsubmit="submitAuth(event)">
+      <div class="auth-field">
+        <label for="auth-username">Username</label>
+        <input id="auth-username" type="text" autocomplete="username" required>
+      </div>
+      <div class="auth-field">
+        <label for="auth-password">Password</label>
+        <input id="auth-password" type="password" autocomplete="current-password" required>
+      </div>
+      <div class="auth-field" id="auth-invite-field" style="display:none">
+        <label for="auth-invite">Invite Code</label>
+        <input id="auth-invite" type="text" autocomplete="off" placeholder="optional">
+      </div>
+      <button type="submit" class="auth-submit" id="auth-submit-btn">Sign In</button>
+      <div class="auth-msg" id="auth-msg"></div>
+    </form>
+  </div>
+</div>
+
 <aside class="sidebar">
   <div class="sidebar-brand">
     <svg class="brand-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1134,6 +1195,12 @@
     </div>
   </nav>
   <div class="sidebar-footer">
+    <div id="sidebar-user" style="display:none;padding:6px 12px 8px;border-top:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px;justify-content:space-between">
+        <span id="sidebar-username" style="font-size:12px;color:var(--muted);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <button onclick="handleLogout()" style="flex-shrink:0;background:none;border:none;padding:2px 6px;font-size:11px;color:var(--muted);cursor:pointer;border-radius:4px;transition:color .15s" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'">Sign out</button>
+      </div>
+    </div>
     <div class="eval-pill" id="sidebar-eval-pill" onclick="document.querySelector('.tab-btn[data-tab=evals]').click()">
       <span class="eval-dot eval-dot-pending" id="sidebar-eval-dot"></span>
       <span class="eval-pill-text" id="sidebar-eval-text">Loading evals…</span>
@@ -1258,6 +1325,7 @@
       <button class="btn-ghost" id="btn-sort-score" disabled>Sort by score</button>
       <input id="matches-search" type="search" placeholder="Filter by title…" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface2);color:var(--text);font-size:12px;width:160px">
       <span class="cache-badge" id="cache-badge"></span>
+      <button class="btn-ghost" id="btn-show-hidden" style="font-size:11px;color:var(--muted)">Hidden calls</button>
     </div>
     <div id="progress-wrap" class="progress-wrap" style="display:none">
       <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
@@ -2147,14 +2215,123 @@ function _getToken() {
 function _setToken(t) {
   try { localStorage.setItem('lk_agent_token', t); } catch {}
 }
+function _clearToken() {
+  try { localStorage.removeItem('lk_agent_token'); } catch {}
+}
+
+// ---------------------------------------------------------------------------
+// Auth UI
+// ---------------------------------------------------------------------------
+let _authMode = 'login'; // 'login' | 'register'
+let _authEnabled = false;
+
+function showAuthTab(mode) {
+  _authMode = mode;
+  document.getElementById('auth-tab-login').classList.toggle('active', mode === 'login');
+  document.getElementById('auth-tab-register').classList.toggle('active', mode === 'register');
+  document.getElementById('auth-invite-field').style.display = mode === 'register' ? '' : 'none';
+  document.getElementById('auth-submit-btn').textContent = mode === 'login' ? 'Sign In' : 'Register';
+  document.getElementById('auth-password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+  document.getElementById('auth-msg').textContent = '';
+  document.getElementById('auth-msg').className = 'auth-msg';
+}
+
+function showAuthScreen() {
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('auth-username').focus();
+}
+
+function hideAuthScreen(username) {
+  document.getElementById('auth-screen').classList.add('hidden');
+  if (username) {
+    document.getElementById('sidebar-username').textContent = username;
+    document.getElementById('sidebar-user').style.display = '';
+  }
+}
+
+async function submitAuth(e) {
+  e.preventDefault();
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const invite   = document.getElementById('auth-invite').value.trim();
+  const btn      = document.getElementById('auth-submit-btn');
+  const msg      = document.getElementById('auth-msg');
+
+  btn.disabled = true;
+  btn.textContent = _authMode === 'login' ? 'Signing in…' : 'Registering…';
+  msg.textContent = '';
+  msg.className = 'auth-msg';
+
+  try {
+    const endpoint = _authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+    const body = _authMode === 'login'
+      ? { username, password }
+      : { username, password, invite };
+    const r = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      msg.textContent = data.detail || 'Something went wrong.';
+      msg.className = 'auth-msg error';
+      return;
+    }
+    _setToken(data.token);
+    hideAuthScreen(data.username || username);
+    init();
+  } catch (err) {
+    msg.textContent = err.message || 'Network error.';
+    msg.className = 'auth-msg error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = _authMode === 'login' ? 'Sign In' : 'Register';
+  }
+}
+
+function handleLogout() {
+  _clearToken();
+  document.getElementById('sidebar-user').style.display = 'none';
+  document.getElementById('sidebar-username').textContent = '';
+  showAuthTab('login');
+  showAuthScreen();
+}
+
+async function checkAuth() {
+  try {
+    const status = await fetch('/api/auth/status').then(r => r.json());
+    if (!status.auth_enabled) {
+      _authEnabled = false;
+      return true; // proceed without auth
+    }
+    _authEnabled = true;
+    const token = _getToken();
+    if (!token) { showAuthScreen(); return false; }
+    const me = await fetch('/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!me.ok) { showAuthScreen(); return false; }
+    const user = await me.json();
+    hideAuthScreen(user.username);
+    return true;
+  } catch {
+    // If status check fails the server may not be up; let init() handle it
+    return true;
+  }
+}
 
 async function api(path, opts = {}) {
   const token = _getToken();
-  if (token && opts.method && opts.method !== 'GET') {
+  if (token) {
     opts.headers = { ...opts.headers, 'Authorization': `Bearer ${token}` };
   }
   const r = await fetch(path, opts);
   if (r.status === 401) {
+    if (_authEnabled) {
+      showAuthScreen();
+      throw new Error('Session expired — please sign in again');
+    }
     const t = prompt('Enter the access token for this app:');
     if (t) { _setToken(t.trim()); return api(path, opts); }
     throw new Error('Unauthorized — token required');
@@ -2566,6 +2743,32 @@ function renderCard(m, opts = {}) {
     max_words: m.max_word_count || null,
   };
   footer.appendChild(_makeSaveBtn('call', saveName, saveUrl, saveMeta));
+
+  // Hide button
+  if (saveUrl) {
+    const hideBtn = mk('button', 'btn-ghost');
+    hideBtn.style.cssText = 'font-size:11px;padding:2px 8px;color:var(--muted)';
+    hideBtn.textContent = '✕ Hide';
+    hideBtn.title = 'Hide this call from all views';
+    hideBtn.addEventListener('click', async () => {
+      hideBtn.disabled = true;
+      hideBtn.textContent = '…';
+      try {
+        await api('/api/hidden', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: saveUrl }),
+        });
+        card.style.transition = 'opacity 0.2s';
+        card.style.opacity = '0';
+        setTimeout(() => card.remove(), 220);
+      } catch (e) {
+        hideBtn.disabled = false;
+        hideBtn.textContent = '✕ Hide';
+      }
+    });
+    footer.appendChild(hideBtn);
+  }
 
   if (footer.children.length) card.appendChild(footer);
   return card;
@@ -4686,6 +4889,45 @@ $('matches-source-sel').addEventListener('change', () => {
   loadMatches();
 });
 
+$('btn-show-hidden')?.addEventListener('click', async () => {
+  const content = $('matches-content');
+  const data = await api('/api/hidden');
+  const urls = data.urls || [];
+  if (!urls.length) {
+    content.innerHTML = '<div class="state-msg"><p>No hidden calls.</p></div>';
+    return;
+  }
+  const wrap = mk('div');
+  wrap.innerHTML = `<div class="stats-bar"><strong>${urls.length}</strong> hidden calls &nbsp;·&nbsp; <button id="btn-back-matches" class="btn-ghost" style="font-size:11px">← Back to matches</button></div>`;
+  const list = mk('div', 'cards');
+  urls.forEach(url => {
+    const row = mk('div', 'card');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 14px;gap:12px';
+    const label = mk('span', null, url);
+    label.style.cssText = 'font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0';
+    const restoreBtn = mk('button', 'btn-ghost');
+    restoreBtn.textContent = 'Restore';
+    restoreBtn.style.cssText = 'font-size:11px;flex-shrink:0';
+    restoreBtn.addEventListener('click', async () => {
+      restoreBtn.disabled = true;
+      await api('/api/hidden', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      row.remove();
+      if (!list.children.length) loadMatches();
+    });
+    row.appendChild(label);
+    row.appendChild(restoreBtn);
+    list.appendChild(row);
+  });
+  wrap.appendChild(list);
+  content.innerHTML = '';
+  content.appendChild(wrap);
+  $('btn-back-matches')?.addEventListener('click', loadMatches);
+});
+
 $('boutique-source-sel').addEventListener('change', () => {
   state.boutiqueFetched = false;
   loadBoutique();
@@ -6141,6 +6383,9 @@ async function blockEntry(url, name, entryType) {
 }
 
 async function init() {
+  const authed = await checkAuth();
+  if (!authed) return;
+
   try {
     const info = await api('/api/cache');
     state.cacheInfo = info;

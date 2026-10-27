@@ -59,6 +59,23 @@ load_dotenv()
 
 _AGENT_SECRET = os.environ.get("AGENT_SECRET", "").strip()
 
+_DATA_DIR = Path(__file__).parent.parent.parent / "data"
+_HIDDEN_FILE = _DATA_DIR / "hidden-calls.json"
+
+
+def _load_hidden() -> set:
+    if not _HIDDEN_FILE.exists():
+        return set()
+    try:
+        return set(json.loads(_HIDDEN_FILE.read_text()))
+    except Exception:
+        return set()
+
+
+def _save_hidden(urls: set) -> None:
+    _DATA_DIR.mkdir(exist_ok=True)
+    _HIDDEN_FILE.write_text(json.dumps(sorted(urls), indent=2))
+
 # ── SSRF guard ────────────────────────────────────────────────────────────────
 
 _PRIVATE_NETS = [
@@ -329,6 +346,13 @@ def _get_listings(source: str = "chillsubs"):
     return listings, ts
 
 
+def _filter_hidden(listings: list) -> list:
+    hidden = _load_hidden()
+    if not hidden:
+        return listings
+    return [l for l in listings if l.url not in hidden]
+
+
 @app.get("/api/matches")
 async def get_matches(
     include_drafting: bool = False,
@@ -337,6 +361,7 @@ async def get_matches(
     source: str = "chillsubs",
 ):
     listings, fetched_at = _get_listings(source)
+    listings = _filter_hidden(listings)
     results = match_works_to_listings(
         listings=listings,
         min_days_to_deadline=min_days,
@@ -377,8 +402,36 @@ async def get_matches(
 @app.get("/api/boutique")
 async def get_boutique(source: str = "chillsubs"):
     listings, fetched_at = _get_listings(source)
+    listings = _filter_hidden(listings)
     results = find_boutique(listings)
     return {"count": len(results), "boutique": results, "fetched_at": fetched_at, "source": source}
+
+
+@app.get("/api/hidden")
+async def get_hidden():
+    return {"urls": sorted(_load_hidden())}
+
+
+@app.post("/api/hidden")
+async def hide_call(body: dict):
+    url = (body.get("url") or "").strip()
+    if not url:
+        raise HTTPException(400, "url required")
+    hidden = _load_hidden()
+    hidden.add(url)
+    _save_hidden(hidden)
+    return {"hidden": len(hidden)}
+
+
+@app.delete("/api/hidden")
+async def unhide_call(body: dict):
+    url = (body.get("url") or "").strip()
+    if not url:
+        raise HTTPException(400, "url required")
+    hidden = _load_hidden()
+    hidden.discard(url)
+    _save_hidden(hidden)
+    return {"hidden": len(hidden)}
 
 
 @app.get("/api/works")
