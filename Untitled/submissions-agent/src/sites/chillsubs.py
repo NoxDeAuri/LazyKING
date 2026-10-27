@@ -207,7 +207,7 @@ async def fetch_all(
             page_num += 1
             total = page.get("total", "?")
             if on_page:
-                await on_page(page_num, len(listings), total)
+                await on_page(page_num, listings, total)
             elif progress:
                 print(f"  page {page_num}: {len(listings)} collected (API total: {total})")
 

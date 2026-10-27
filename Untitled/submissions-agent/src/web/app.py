@@ -43,6 +43,8 @@ from ..events import handlers as _event_handlers  # noqa: F401 — registers han
 from ..profile.builder import load_works, save_works
 from ..sites.chillsubs import load_cache
 from ..sites.chillsubs import search as chillsubs_search
+from ..sites.chillsubs import CACHE_FILE as _CS_CACHE_FILE, DATA_DIR as _CS_DATA_DIR
+from ..sites.base import ListingCache as _ListingCache
 from ..sites import querytracker as qt_mod
 from ..sites import grinder as grinder_mod
 from ..sites import mswl as mswl_mod
@@ -181,11 +183,19 @@ async def refresh_listings(genre: str = "fiction"):
     """
     queue: asyncio.Queue = asyncio.Queue()
 
-    async def _on_page(page_num: int, collected: int, total):
+    async def _on_page(page_num: int, listings: list, total):
+        if listings:
+            _CS_DATA_DIR.mkdir(exist_ok=True)
+            partial = _ListingCache(
+                site="chillsubs",
+                fetched_at=datetime.now().isoformat(),
+                listings=listings,
+            )
+            _CS_CACHE_FILE.write_text(partial.model_dump_json())
         await queue.put({
             "type": "progress",
             "page": page_num,
-            "collected": collected,
+            "collected": len(listings),
             "total": total,
         })
 
@@ -333,6 +343,30 @@ async def get_matches(
         max_days_to_deadline=max_days if max_days > 0 else None,
         include_drafting=include_drafting,
     )
+    if not results:
+        works = load_works().get("works", [])
+        eligible = [w for w in works if w.get("status") in ("complete", "drafting")]
+        if not eligible:
+            results = [
+                {
+                    "listing_title":    l.title,
+                    "listing_url":      l.url,
+                    "submission_url":   l.submission_url or l.url,
+                    "magazine_name":    l.magazine_name,
+                    "magazine_url":     l.magazine_url,
+                    "pub_description":  l.pub_description,
+                    "pub_description_full": l.pub_description_full,
+                    "call_description": l.call_description,
+                    "deadline":         l.deadline.isoformat() if l.deadline else None,
+                    "pay":              l.pay,
+                    "fee":              l.fee,
+                    "genre":            l.genre,
+                    "complete_matches": [],
+                    "draft_matches":    [],
+                    "metadata":         l.metadata or {},
+                }
+                for l in listings
+            ]
     return {"count": len(results), "matches": results, "fetched_at": fetched_at, "source": source}
 
 

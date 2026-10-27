@@ -4586,6 +4586,7 @@ async function _streamChillSubs(progressFill, progressText) {
       if (ev.type === 'progress') {
         progressFill.style.width = Math.min(95, (ev.page / 30) * 100) + '%';
         progressText.textContent = `Page ${ev.page} · ${ev.collected} fiction calls`;
+        if (ev.page % 3 === 0) loadMatches();
       } else if (ev.type === 'done') {
         progressFill.style.width = '100%';
         progressText.textContent = `Chill Subs done — ${ev.count} calls`;
