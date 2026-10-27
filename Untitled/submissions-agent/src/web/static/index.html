@@ -717,6 +717,12 @@
     .tl-ready .tl-date { font-weight: 600; }
     .tl-on-time { color: var(--green); }
     .tl-overdue { color: var(--red); }
+    @keyframes flash-row { 0%,100%{background:transparent} 12%{background:color-mix(in srgb,var(--accent) 22%,var(--surface))} }
+    .work-row-flash td { animation: flash-row 1.8s ease-out; }
+    .work-name-link { background:none;border:none;padding:0;font-weight:600;color:var(--accent);cursor:pointer;font-size:inherit;font-family:inherit;text-align:left; }
+    .work-name-link:hover { text-decoration:underline; }
+    #toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--fg);color:var(--bg);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;z-index:9999 }
+    #toast.show { opacity:1;transform:translateX(-50%) translateY(0) }
 
     /* ── Query / publisher cards ── */
     .qt-card {
@@ -1041,6 +1047,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
 </head>
 <body>
+<div id="toast"></div>
 
 <aside class="sidebar">
   <div class="sidebar-brand">
@@ -1074,6 +1081,10 @@
       <button class="tab-btn" data-tab="at-a-glance">
         <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         <span>At a Glance</span>
+      </button>
+      <button class="tab-btn" data-tab="screenplays">
+        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="17" x2="7" y2="17"/></svg>
+        <span>Screenplays</span>
       </button>
     </div>
     <div class="nav-group">
@@ -1127,7 +1138,6 @@
       <span class="eval-dot eval-dot-pending" id="sidebar-eval-dot"></span>
       <span class="eval-pill-text" id="sidebar-eval-text">Loading evals…</span>
     </div>
-    <div style="padding:6px 10px 2px;font-size:10px;color:var(--nav-group-label)">v2026.10.27</div>
   </div>
 </aside>
 
@@ -1169,6 +1179,14 @@
   <div id="mobile-more-backdrop"></div>
   <div id="mobile-more-panel">
     <div class="mob-sheet-handle"></div>
+
+    <p class="mob-sheet-section-label">Submissions</p>
+    <div class="mob-sheet-grid">
+      <button class="tab-btn mob-sheet-item" data-tab="screenplays">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="17" x2="7" y2="17"/></svg>
+        Screenplays
+      </button>
+    </div>
 
     <p class="mob-sheet-section-label">Writing</p>
     <div class="mob-sheet-grid">
@@ -1231,7 +1249,6 @@
         <option value="both">Both</option>
       </select>
       <button class="btn-primary" id="btn-refresh">Fetch from Chill Subs</button>
-      <button class="btn-ghost" id="btn-grinder-refresh">Fetch from Grinder</button>
       <label class="checkbox-label">
         <input type="checkbox" id="toggle-drafting"> Show works in progress
       </label>
@@ -1289,6 +1306,22 @@
     </div>
     <div id="glance-stats" style="display:none;padding:12px 0 4px;display:flex;gap:20px;flex-wrap:wrap"></div>
     <div id="glance-content"><div class="state-msg"><p>Loading…</p></div></div>
+  </section>
+
+  <!-- ── Screenplays ── -->
+  <section id="tab-screenplays" class="tab-pane">
+    <div class="toolbar">
+      <select id="screenplay-format-sel" style="font-size:13px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface2);color:var(--text)">
+        <option value="any">All formats</option>
+        <option value="feature">Feature</option>
+        <option value="short">Short</option>
+        <option value="pilot">Pilot</option>
+        <option value="tv">TV</option>
+      </select>
+      <button class="btn-primary" id="btn-screenplay-fetch">Fetch from FilmFreeway</button>
+      <span class="cache-badge" id="screenplay-badge"></span>
+    </div>
+    <div id="screenplay-content"><div class="state-msg"><p>Select a format and click Fetch to load competitions.</p></div></div>
   </section>
 
   <!-- ── Works ── -->
@@ -1746,11 +1779,11 @@
     </div>
     <div class="modal-field">
       <label>URL <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-      <input type="url" id="gem-url" style="width:100%">
+      <input type="text" id="gem-url" placeholder="https://…" autocomplete="off" style="width:100%">
     </div>
     <div class="modal-field">
       <label>Deadline <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-      <input type="date" id="gem-deadline" style="width:100%">
+      <input type="text" id="gem-deadline" placeholder="MM-DD-YYYY" autocomplete="off" style="width:100%">
     </div>
     <div class="modal-field">
       <label>Notes</label>
@@ -2014,6 +2047,8 @@ const state = {
   saved:              {},   // url → {id, type, name, url, notes, saved_at, metadata, targeted_works}
   savedFetched:       false,
   glanceData:         null,
+  scFetched:          false,
+  screenplays:        null,
 };
 
 const $ = id => document.getElementById(id);
@@ -2025,6 +2060,16 @@ const mk = (tag, cls, html) => {
 };
 
 // Escape HTML special chars before inserting external/AI-generated text via innerHTML.
+let _toastTimer;
+function showToast(msg, ms = 2200) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+}
+
 function esc(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;')
@@ -2079,6 +2124,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
       if (!state.savedFetched) loadSaved().then(() => renderGlanceTab());
       else renderGlanceTab();
     }
+    if (tab === 'screenplays'  && !state.scFetched)           loadScreenplays();
     if (tab === 'works'        && !state.worksFetched)        loadWorks();
     if (tab === 'submissions'  && !state.submissionsFetched)  loadSubmissions();
     if (tab === 'queries'      && !state.qtFetched)           loadQTCache();
@@ -2132,6 +2178,33 @@ function deadlineBadge(deadline) {
   if (days < 31) return `<span class="badge badge-orange">${days}d left</span>`;
   if (days < 61) return `<span class="badge badge-yellow">${days}d left</span>`;
   return `<span class="badge badge-green">${days}d left</span>`;
+}
+
+function glanceDeadlineChip(deadline) {
+  if (!deadline) return `<span class="meta-chip" style="color:var(--muted)">open-ended</span>`;
+  const days = Math.round((new Date(deadline + 'T00:00:00') - new Date()) / 864e5);
+  if (days < 0)  return `<span class="meta-chip" style="background:var(--surface2);color:var(--muted);border-color:var(--border)">closed</span>`;
+  if (days <= 7) return `<span class="meta-chip" style="background:var(--red-bg);color:var(--red);border-color:var(--red-border);font-weight:600">⚠ ${days}d left · ${fmtDate(deadline)}</span>`;
+  if (days <= 14) return `<span class="meta-chip" style="background:var(--orange-bg);color:var(--orange);border-color:var(--orange-border);font-weight:600">${days}d left · ${fmtDate(deadline)}</span>`;
+  if (days <= 30) return `<span class="meta-chip" style="background:var(--yellow-bg);color:var(--yellow);border-color:var(--yellow-border)">${days}d left · ${fmtDate(deadline)}</span>`;
+  return `<span class="meta-chip">${fmtDate(deadline)} · ${days}d</span>`;
+}
+
+function goToWork(workId) {
+  document.querySelector('.tab-btn[data-tab="works"]').click();
+  const tryHighlight = (attempts = 0) => {
+    const row = document.getElementById('work-row-' + workId);
+    if (row) {
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.remove('work-row-flash');
+      void row.offsetWidth;
+      row.classList.add('work-row-flash');
+      row.addEventListener('animationend', () => row.classList.remove('work-row-flash'), { once: true });
+    } else if (attempts < 15) {
+      setTimeout(() => tryHighlight(attempts + 1), 100);
+    }
+  };
+  requestAnimationFrame(() => tryHighlight());
 }
 
 function feeBadge(fee, feeRequired) {
@@ -2678,6 +2751,10 @@ function renderTimelineEl(tl, workId) {
 // ---------------------------------------------------------------------------
 function fmtDate(s) {
   if (!s) return '';
+  // Date-only strings (YYYY-MM-DD) must be parsed as local midnight to avoid UTC offset shifting the day
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    return new Date(s + 'T00:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  }
   const d = new Date(s);
   return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) +
     ' at ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
@@ -3107,7 +3184,7 @@ async function renderGlanceTab() {
     targeted.forEach(item => {
       const card = mk('div', 'card');
       const meta = item.metadata || {};
-      const deadlineChip = meta.deadline ? `<span class="meta-chip">${fmtDate(meta.deadline)}</span>` : '<span class="meta-chip" style="color:var(--muted)">open-ended</span>';
+      const deadlineChip = glanceDeadlineChip(meta.deadline);
       const feeChip = meta.fee_required ? '<span class="meta-chip" style="color:#e74c3c">fee</span>' : '<span class="meta-chip" style="color:#27ae60">no fee</span>';
       const nameHtml = item.url
         ? `<a href="${esc(safeUrl(item.url))}" target="_blank" rel="noopener" style="font-weight:600;color:var(--accent);font-size:14px">${esc(item.name)}</a>`
@@ -3121,6 +3198,39 @@ async function renderGlanceTab() {
       editBtn.style.cssText = 'font-size:11px;padding:2px 7px;margin-left:auto;color:var(--muted)';
       editBtn.addEventListener('click', () => openGlanceEditModal(item));
       header.appendChild(editBtn);
+
+      // Recalibrate button — re-syncs Tweek timeline(s) to current status + deadline
+      if ((item.targeted_works || []).length) {
+        const recalBtn = mk('button', 'btn-ghost');
+        recalBtn.textContent = '⟳ Recalibrate';
+        recalBtn.title = meta.deadline
+          ? `Sync Tweek timeline(s) to ${meta.deadline} deadline`
+          : 'Sync Tweek timeline(s) to current work status';
+        recalBtn.style.cssText = 'font-size:11px;padding:2px 7px;color:var(--muted)';
+        recalBtn.addEventListener('click', async () => {
+          recalBtn.disabled = true;
+          recalBtn.textContent = '⟳ …';
+          let ok = 0, fail = 0;
+          for (const tw of item.targeted_works) {
+            try {
+              const body = meta.deadline
+                ? { adjustment: 'target', target_deadline: meta.deadline, sync_tweek: true }
+                : { adjustment: 'custom', sessions_per_week: 5, sync_tweek: true };
+              await api(`/api/timeline/${tw.work_id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              });
+              ok++;
+            } catch (_) { fail++; }
+          }
+          recalBtn.disabled = false;
+          recalBtn.textContent = fail ? `⟳ ${ok} ok · ${fail} failed` : `✓ ${ok} synced`;
+          setTimeout(() => { recalBtn.textContent = '⟳ Recalibrate'; }, 3500);
+        });
+        header.appendChild(recalBtn);
+      }
+
       card.appendChild(header);
 
       if (item.notes) {
@@ -3138,7 +3248,7 @@ async function renderGlanceTab() {
         row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surface2);border-radius:var(--r);flex-wrap:wrap';
         const statusDot = tw.status === 'complete' ? '●' : tw.status === 'drafting' ? '◐' : '○';
         const wc = tw.word_count ? `${tw.word_count.toLocaleString()}w · ` : '';
-        row.innerHTML = `<span style="font-size:13px;flex:1;min-width:0">${statusDot} <strong>${esc(tw.work_title)}</strong> <span style="color:var(--muted);font-size:11px">${wc}${esc(tw.status || '')}</span></span>`;
+        row.innerHTML = `<span style="font-size:13px;flex:1;min-width:0">${statusDot} <button class="work-name-link" onclick="goToWork('${tw.work_id}')">${esc(tw.work_title)}</button> <span style="color:var(--muted);font-size:11px">${wc}${esc(tw.status || '')}</span></span>`;
         const badge = _statusBadge(tw);
         if (badge) { const b = mk('span'); b.innerHTML = badge; row.appendChild(b); }
         const submitBtn = _submitBtn(item, tw);
@@ -3177,7 +3287,7 @@ async function renderGlanceTab() {
       const nameHtml = item.url
         ? `<a href="${esc(safeUrl(item.url))}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(item.name)}</a>`
         : esc(item.name);
-      const deadlineChip = meta.deadline ? `<span class="meta-chip">${fmtDate(meta.deadline)}</span>` : '';
+      const deadlineChip = glanceDeadlineChip(meta.deadline);
       row.innerHTML = `<span style="flex:1;min-width:0;font-size:13px">${nameHtml}${deadlineChip}</span>`;
       const gotoSaved = mk('button', 'btn-ghost');
       gotoSaved.textContent = '+ Target Work';
@@ -3207,7 +3317,8 @@ function openGlanceEditModal(item) {
   $('gem-name').value     = item.name  || '';
   $('gem-url').value      = item.url   || '';
   $('gem-notes').value    = item.notes || '';
-  $('gem-deadline').value = (item.metadata || {}).deadline || '';
+  const _dl = (item.metadata || {}).deadline || '';
+  $('gem-deadline').value = _dl ? _dl.slice(5) + '-' + _dl.slice(0,4) : ''; // YYYY-MM-DD → MM-DD-YYYY
   $('gem-status').textContent = '';
   $('gem-status').className   = 'modal-status';
   $('gem-confirm').disabled   = false;
@@ -3226,14 +3337,25 @@ $('gem-confirm')?.addEventListener('click', async () => {
   const notes    = $('gem-notes').value.trim();
   const deadline = $('gem-deadline').value.trim();
   if (!name) { $('gem-name').focus(); return; }
+  let deadlineISO = '';
+  if (deadline) {
+    if (!/^\d{2}-\d{2}-\d{4}$/.test(deadline)) {
+      $('gem-status').textContent = 'Deadline must be MM-DD-YYYY';
+      $('gem-status').className = 'modal-status error';
+      $('gem-deadline').focus();
+      return;
+    }
+    const [mm, dd, yyyy] = deadline.split('-');
+    deadlineISO = `${yyyy}-${mm}-${dd}`;
+  }
 
   $('gem-confirm').disabled   = true;
   $('gem-status').textContent = 'Saving…';
 
   try {
     const patch = { name, url, notes };
-    if (deadline) patch.metadata = { deadline };
-    else          patch.metadata = { deadline: null };
+    if (deadlineISO) patch.metadata = { deadline: deadlineISO };
+    else             patch.metadata = { deadline: null };
 
     const result = await api(`/api/saved/${_gemItemId}`, {
       method:  'PATCH',
@@ -3248,6 +3370,7 @@ $('gem-confirm')?.addEventListener('click', async () => {
     state.saved[updated.url || updated.id] = updated;
 
     $('gem-modal').close();
+    showToast('Saved');
     renderGlanceTab();
     if ($('tab-saved')?.classList.contains('active')) renderSavedTab();
   } catch (e) {
@@ -3564,6 +3687,7 @@ function renderWorksTable() {
 
   state.works.forEach(w => {
     const tr = mk('tr');
+    tr.id = 'work-row-' + w.id;
     tr.innerHTML = `
       <td style="font-weight:500">${esc(w.title)}</td>
       <td style="color:var(--muted)">${esc(w.type) || '—'}</td>
@@ -4434,131 +4558,113 @@ $('plan-modal-confirm').addEventListener('click', async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Refresh (SSE via fetch streaming)
+// Refresh (unified — label and behavior driven by source selector)
 // ---------------------------------------------------------------------------
+async function _streamChillSubs(progressFill, progressText) {
+  progressFill.style.background = '';
+  progressText.textContent = 'Connecting to Chill Subs…';
+  const token = _getToken();
+  const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+  const response = await fetch('/api/listings/refresh', { method: 'POST', headers });
+  if (response.status === 401) {
+    const t = prompt('Enter the access token for this app:');
+    if (t) { _setToken(t.trim()); return _streamChillSubs(progressFill, progressText); }
+    throw new Error('Unauthorized — token required');
+  }
+  if (!response.ok) throw new Error(await response.text());
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n'); buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      let ev; try { ev = JSON.parse(line.slice(6)); } catch { continue; }
+      if (ev.type === 'progress') {
+        progressFill.style.width = Math.min(95, (ev.page / 30) * 100) + '%';
+        progressText.textContent = `Page ${ev.page} · ${ev.collected} fiction calls`;
+      } else if (ev.type === 'done') {
+        progressFill.style.width = '100%';
+        progressText.textContent = `Chill Subs done — ${ev.count} calls`;
+        state.boutiqueFetched = false; state.scores = {}; updateSortButton();
+        await loadMatches();
+        const info = await api('/api/cache'); updateCacheBadge(info);
+      } else if (ev.type === 'error') {
+        progressFill.style.background = 'var(--red)';
+        throw new Error(ev.message);
+      }
+    }
+  }
+}
+
+async function _streamGrinder(progressFill, progressText) {
+  progressFill.style.background = '';
+  progressFill.style.width = '2%';
+  progressText.textContent = 'Connecting to The Submission Grinder…';
+  const token = _getToken();
+  const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+  const response = await fetch('/api/grinder/refresh', { method: 'POST', headers });
+  if (response.status === 401) {
+    const t = prompt('Enter the access token for this app:');
+    if (t) { _setToken(t.trim()); return _streamGrinder(progressFill, progressText); }
+    throw new Error('Unauthorized — token required');
+  }
+  if (!response.ok) throw new Error(await response.text());
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n'); buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      let ev; try { ev = JSON.parse(line.slice(6)); } catch { continue; }
+      if (ev.type === 'session') { progressText.textContent = 'Session started…'; }
+      else if (ev.type === 'fetched') { progressFill.style.width = '80%'; progressText.textContent = `${ev.total} markets · ${ev.open} open`; }
+      else if (ev.type === 'done') {
+        progressFill.style.width = '100%';
+        progressText.textContent = `Grinder done — ${ev.markets} open markets`;
+        state.boutiqueFetched = false;
+        await loadMatches();
+      } else if (ev.type === 'error') {
+        progressFill.style.background = 'var(--red)';
+        throw new Error(ev.message);
+      }
+    }
+  }
+}
+
+function _fetchBtnLabel() {
+  const src = $('matches-source-sel')?.value || 'chillsubs';
+  if (src === 'grinder') return 'Fetch from Grinder';
+  if (src === 'both')    return 'Fetch Both Sources';
+  return 'Fetch from Chill Subs';
+}
+
 $('btn-refresh').addEventListener('click', async () => {
   const btn = $('btn-refresh');
   btn.disabled = true;
   btn.textContent = 'Fetching…';
-
+  const src = $('matches-source-sel').value;
   const progressWrap = $('progress-wrap');
   const progressFill = $('progress-fill');
   const progressText = $('progress-text');
   progressWrap.style.display = 'block';
   progressFill.style.width = '2%';
-  progressText.textContent = 'Connecting to Chill Subs…';
-  $('matches-content').innerHTML = '<div class="state-msg"><p>Fetching Chill Subs calls…</p></div>';
-
   try {
-    const response = await fetch('/api/listings/refresh', { method: 'POST' });
-    if (!response.ok) throw new Error(await response.text());
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        let event;
-        try { event = JSON.parse(line.slice(6)); } catch { continue; }
-
-        if (event.type === 'progress') {
-          const pct = Math.min(95, (event.page / 30) * 100);
-          progressFill.style.width = pct + '%';
-          progressText.textContent = `Page ${event.page} · ${event.collected} fiction calls collected`;
-        } else if (event.type === 'done') {
-          progressFill.style.width = '100%';
-          progressText.textContent = `Done — ${event.count} calls cached`;
-          setTimeout(() => { progressWrap.style.display = 'none'; }, 2000);
-          state.boutiqueFetched = false;
-          state.scores = {};
-          updateSortButton();
-          await loadMatches();
-          const info = await api('/api/cache');
-          updateCacheBadge(info);
-        } else if (event.type === 'error') {
-          progressText.textContent = `Error: ${event.message}`;
-          progressFill.style.background = 'var(--red)';
-        }
-      }
-    }
+    if (src === 'chillsubs' || src === 'both') await _streamChillSubs(progressFill, progressText);
+    if (src === 'grinder'   || src === 'both') await _streamGrinder(progressFill, progressText);
+    setTimeout(() => { progressWrap.style.display = 'none'; }, 2000);
   } catch (e) {
     progressText.textContent = `Failed: ${e.message}`;
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Fetch from Chill Subs';
-  }
-});
-
-// ---------------------------------------------------------------------------
-// Grinder refresh
-// ---------------------------------------------------------------------------
-$('btn-grinder-refresh').addEventListener('click', async () => {
-  const btn = $('btn-grinder-refresh');
-  btn.disabled = true;
-  btn.textContent = 'Fetching…';
-
-  const progressWrap = $('progress-wrap');
-  const progressFill = $('progress-fill');
-  const progressText = $('progress-text');
-  progressWrap.style.display = 'block';
-  progressFill.style.width = '2%';
-  progressText.textContent = 'Connecting to The Submission Grinder…';
-  $('matches-content').innerHTML = '<div class="state-msg"><p>Fetching Grinder markets…</p></div>';
-
-  try {
-    const response = await fetch('/api/grinder/refresh', { method: 'POST' });
-    if (!response.ok) throw new Error(await response.text());
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        let event;
-        try { event = JSON.parse(line.slice(6)); } catch { continue; }
-
-        if (event.type === 'session') {
-          progressText.textContent = 'Session started…';
-        } else if (event.type === 'fetched') {
-          progressFill.style.width = '80%';
-          progressText.textContent = `${event.total} total markets · ${event.open} open`;
-        } else if (event.type === 'done') {
-          progressFill.style.width = '100%';
-          progressText.textContent = `Done — ${event.markets} open markets cached`;
-          setTimeout(() => { progressWrap.style.display = 'none'; }, 2000);
-          state.boutiqueFetched = false;
-          if ($('matches-source-sel').value === 'grinder' || $('matches-source-sel').value === 'both') {
-            await loadMatches();
-          }
-          const info = await api('/api/grinder/cache');
-          $('cache-badge').textContent = `${info.markets || 0} Grinder markets · ${fmtDate(info.fetched_at)}`;
-        } else if (event.type === 'error') {
-          progressText.textContent = `Error: ${event.message}`;
-          progressFill.style.background = 'var(--red)';
-        }
-      }
-    }
-  } catch (e) {
-    progressText.textContent = `Failed: ${e.message}`;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Fetch from Grinder';
+    btn.textContent = _fetchBtnLabel();
   }
 });
 
@@ -4575,6 +4681,7 @@ $('toggle-venue-research').addEventListener('change', e => {
 });
 
 $('matches-source-sel').addEventListener('change', () => {
+  $('btn-refresh').textContent = _fetchBtnLabel();
   loadMatches();
 });
 
@@ -5768,6 +5875,119 @@ $('btn-save-schedule')?.addEventListener('click', async () => {
 });
 
 $('btn-cancel-schedule')?.addEventListener('click', () => { $('ig-schedule-editor').style.display = 'none'; });
+
+// ---------------------------------------------------------------------------
+// Screenplays
+// ---------------------------------------------------------------------------
+async function loadScreenplays() {
+  state.scFetched = true;
+  const content = $('screenplay-content');
+  content.innerHTML = '<div class="state-msg"><p>Loading screenplay calls…</p></div>';
+  try {
+    const fmt = $('screenplay-format-sel')?.value || 'any';
+    const data = await api(`/api/screenplay-calls?format=${fmt}&include_fellowships=true`);
+    state.screenplays = data;
+    renderScreenplays();
+    const badge = $('screenplay-badge');
+    if (badge) badge.textContent = `${data.competition_count} competitions · ${data.fellowship_count} fellowships${data.ff_fetched_at ? ' · ' + fmtDate(data.ff_fetched_at) : ''}`;
+  } catch (e) {
+    content.innerHTML = `<div class="state-msg state-error"><h3>Error</h3><p>${esc(e.message)}</p></div>`;
+  }
+}
+
+function _scFormatBadge(fmt) {
+  if (!fmt || fmt === 'any') return '';
+  const labels = { feature: 'Feature', short: 'Short', pilot: 'Pilot', tv: 'TV' };
+  return `<span class="meta-chip">${labels[fmt] || esc(fmt)}</span>`;
+}
+
+function renderScreenplays() {
+  const content = $('screenplay-content');
+  if (!state.screenplays) return;
+  const { competitions = [], fellowships = [] } = state.screenplays;
+  let html = '';
+
+  function _card(item) {
+    const feeText = item.fee || item.pay_rate || '';
+    const isFee = /fee/i.test(feeText) && !/no.fee/i.test(feeText);
+    const feeBadge = isFee
+      ? `<span class="badge badge-red">Fee</span>`
+      : `<span class="badge badge-green">No fee</span>`;
+    const fellowBadge = item.is_fellowship
+      ? `<span class="badge badge-yellow">Fellowship</span>`
+      : '';
+    const deadlineBadgeHtml = item.deadline ? deadlineBadge(item.deadline) : '';
+    const prizeBadge = item.prize ? `<span class="meta-chip" style="color:var(--green)">Prize: ${esc(item.prize)}</span>` : '';
+    const fmtBadge = _scFormatBadge(item.screenplay_format);
+    const pageBadge = item.max_page_count ? `<span class="meta-chip">&le;${item.max_page_count}pp</span>` : '';
+    const titleHtml = item.url
+      ? `<a href="${esc(safeUrl(item.url))}" target="_blank" rel="noopener" style="font-weight:600;color:var(--accent);font-size:14px">${esc(item.title)}</a>`
+      : `<span style="font-weight:600;font-size:14px">${esc(item.title)}</span>`;
+    return `
+      <div class="card" style="margin-bottom:10px">
+        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+          ${titleHtml}
+          ${fellowBadge}${feeBadge}${deadlineBadgeHtml}${prizeBadge}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">${fmtBadge}${pageBadge}</div>
+        ${item.description ? `<p style="font-size:12px;color:var(--muted);margin:0">${esc(item.description)}</p>` : ''}
+      </div>`;
+  }
+
+  if (competitions.length) {
+    html += `<h3 style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 0 12px">Competitions (${competitions.length})</h3>`;
+    html += competitions.map(_card).join('');
+  }
+  if (fellowships.length) {
+    html += `<h3 style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:${competitions.length ? '24px' : '0'} 0 12px">Fellowships &amp; Major Competitions (${fellowships.length})</h3>`;
+    html += fellowships.map(_card).join('');
+  }
+  if (!competitions.length && !fellowships.length) {
+    html = '<div class="state-msg"><p>No results. Click Fetch from FilmFreeway to load competitions.</p></div>';
+  }
+  content.innerHTML = html;
+}
+
+$('screenplay-format-sel')?.addEventListener('change', () => {
+  state.scFetched = false;
+  loadScreenplays();
+});
+
+$('btn-screenplay-fetch')?.addEventListener('click', async () => {
+  const btn = $('btn-screenplay-fetch');
+  btn.disabled = true;
+  btn.textContent = 'Fetching…';
+  const content = $('screenplay-content');
+  content.innerHTML = '<div class="state-msg"><p>Fetching FilmFreeway competitions…</p></div>';
+  try {
+    const response = await fetch('/api/screenplay-calls/refresh', { method: 'POST' });
+    if (!response.ok) throw new Error(await response.text());
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n'); buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        let ev; try { ev = JSON.parse(line.slice(6)); } catch { continue; }
+        if (ev.type === 'done') {
+          state.scFetched = false;
+          await loadScreenplays();
+        } else if (ev.type === 'error') {
+          content.innerHTML = `<div class="state-msg state-error"><h3>Error</h3><p>${esc(ev.message)}</p></div>`;
+        }
+      }
+    }
+  } catch (e) {
+    content.innerHTML = `<div class="state-msg state-error"><h3>Error</h3><p>${esc(e.message)}</p></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Fetch from FilmFreeway';
+  }
+});
 
 // ---------------------------------------------------------------------------
 // Manual publishers
