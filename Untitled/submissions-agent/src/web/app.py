@@ -202,11 +202,17 @@ async def refresh_listings(genre: str = "fiction"):
 
     async def _on_page(page_num: int, listings: list, total):
         if listings:
+            today = date.today()
+            visible = [
+                l for l in listings
+                if (not l.deadline or l.deadline >= today)
+                and (not l.reading_period_open or l.reading_period_open <= today)
+            ]
             _CS_DATA_DIR.mkdir(exist_ok=True)
             partial = _ListingCache(
                 site="chillsubs",
                 fetched_at=datetime.now().isoformat(),
-                listings=listings,
+                listings=visible,
             )
             _CS_CACHE_FILE.write_text(partial.model_dump_json())
         await queue.put({
